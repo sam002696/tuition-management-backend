@@ -18,13 +18,44 @@ class ConnectionRequestService
 
         $teacher = Auth::user();
         if ($teacher->role !== 'teacher') {
-            ApiResponseService::errorResponse(403, 'Only teachers can send requests.');
+            return ApiResponseService::errorResponse('Only teachers can send requests.', 403);
         }
 
-        $connection = ConnectionRequest::firstOrCreate([
+        // Check if already connected (accepted)
+        $existingAccepted = ConnectionRequest::where([
+            ['teacher_id', $teacher->id],
+            ['student_id', $validated['student_id']],
+            ['status', 'accepted'],
+        ])->first();
+
+        if ($existingAccepted) {
+            return ApiResponseService::errorResponse(
+                'You are already connected with this student.',
+                409
+            );
+        }
+
+        // Check if there's a pending request
+        $existingPending = ConnectionRequest::where([
+            ['teacher_id', $teacher->id],
+            ['student_id', $validated['student_id']],
+            ['status', 'pending'],
+        ])->first();
+
+        if ($existingPending) {
+            return ApiResponseService::errorResponse(
+                'A pending request already exists for this student.',
+                409
+            );
+        }
+
+        // Now safe to create a new request (including if previous was rejected)
+        $connection = ConnectionRequest::create([
             'teacher_id' => $teacher->id,
             'student_id' => $validated['student_id'],
+            'status' => 'pending',
         ]);
+
 
         //  TODO:  notification trigger here
         return $connection;
