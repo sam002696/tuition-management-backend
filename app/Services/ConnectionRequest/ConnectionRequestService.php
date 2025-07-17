@@ -3,6 +3,8 @@
 namespace App\Services\ConnectionRequest;
 
 use App\Models\ConnectionRequest;
+use App\Models\User;
+use App\Notifications\ConnectionRequestNotification;
 use App\Services\ResponseBuilder\ApiResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +59,19 @@ class ConnectionRequestService
         ]);
 
 
-        //  TODO:  notification trigger here
+        // notification trigger here
+
+
+        // finding the student to notify
+        $student = User::findOrFail($validated['student_id']);
+
+        // Notify the student about the new request
+        $student->notify(new ConnectionRequestNotification([
+            'title' => 'New Connection Request',
+            'body' => "{$teacher->name} sent you a request.",
+            'request_id' => $connection->id,
+        ]));
+
         return $connection;
     }
 
@@ -78,7 +92,21 @@ class ConnectionRequestService
 
         $connection->update(['status' => $validated['status']]);
 
-        // TODO:  notification trigger here
+
+        //  notification trigger here
+
+
+        // finding the teacher to notify
+        $teacher = User::findOrFail($connection->teacher_id);
+
+
+        // Notify the teacher about the response
+        $teacher->notify(new ConnectionRequestNotification([
+            'title' => "Request {$connection->status}",
+            'body' => "{$student->name} has {$connection->status} your connection request.",
+            'request_id' => $connection->id,
+        ]));
+
         return $connection;
     }
 
