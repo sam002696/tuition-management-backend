@@ -4,6 +4,8 @@ namespace App\Services\TuitionEvent;
 
 use App\Models\ConnectionRequest;
 use App\Models\TuitionEvent;
+use App\Models\User;
+use App\Notifications\TuitionEventNotification;
 use App\Services\ResponseBuilder\ApiResponseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +19,7 @@ class TuitionEventService
         $user = Auth::user();
 
         if ($user->role !== 'teacher') {
-            ApiResponseService::errorResponse(403, 'Only teachers can create events.');
+            abort(403, 'Only teachers can create events.');
         }
 
         $validated = $request->validate([
@@ -34,18 +36,30 @@ class TuitionEventService
         ])->first();
 
         if (!$connection) {
-            throw ValidationException::withMessages([
-                'student_id' => ['Student is not connected or request not accepted.']
-            ]);
+            abort(500, 'Student is not connected or request not accepted.');
         }
 
-        return TuitionEvent::create([
+        $event =  TuitionEvent::create([
             'teacher_id' => $user->id,
             'student_id' => $validated['student_id'],
             'title' => $validated['title'],
             'description' => $validated['description'],
             'scheduled_at' => $validated['scheduled_at'],
         ]);
+
+        // notify the student
+
+        // finding the student to notify
+        $student = User::find($validated['student_id']);
+
+        // Notify the student about the new tuition event
+        $student->notify(new TuitionEventNotification([
+            'title' => 'New Tuition Event Scheduled',
+            'body' => "You have a new tuition event from {$user->name}.",
+            'event_id' => $event->id,
+        ]));
+
+        return $event;
     }
 
     public function respond(Request $request, $id)
@@ -53,7 +67,7 @@ class TuitionEventService
         $user = Auth::user();
 
         if ($user->role !== 'student') {
-            ApiResponseService::errorResponse(403, 'Only students can respond to events.');
+            abort(403, 'Only students can respond to events.');
         }
 
         $validated = $request->validate([
@@ -66,6 +80,20 @@ class TuitionEventService
 
         $event->status = $validated['status'];
         $event->save();
+
+
+        // Notify the teacher about the response
+
+        // finding the teacher to notify
+        $teacher = User::find($event->teacher_id);
+
+
+        // Notify the teacher about the response
+        $teacher->notify(new TuitionEventNotification([
+            'title' => 'Student Responded to Tuition Event',
+            'body' => "{$user->name} has {$validated['status']} your tuition event.",
+            'event_id' => $event->id,
+        ]));
 
         return $event;
     }
@@ -99,5 +127,4 @@ class TuitionEventService
             ->orderBy('scheduled_at', 'asc')
             ->get();
     }
-
 }

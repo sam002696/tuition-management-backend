@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 // use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ConnectionRequestNotification extends Notification
+class TuitionEventNotification extends Notification
 {
     use Queueable;
 
@@ -22,7 +22,11 @@ class ConnectionRequestNotification extends Notification
         $this->data = $data;
     }
 
-
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
     public function via(object $notifiable): array
     {
         return ['database', 'broadcast'];
@@ -39,24 +43,31 @@ class ConnectionRequestNotification extends Notification
     //         ->line('Thank you for using our application!');
     // }
 
+    /**
+     * Database format
+     */
     public function toDatabase(object $notifiable): array
     {
         return [
             'title' => $this->data['title'],
             'body' => $this->data['body'],
-            'request_id' => $this->data['request_id'],
-            'type' => 'connection_request',
+            'event_id' => $this->data['event_id'],
+            'type' => 'tuition_event',
             'audience_role' => $notifiable->role,
         ];
     }
 
+
+    /**
+     * Broadcast format
+     */
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
             'title' => $this->data['title'],
             'body' => $this->data['body'],
-            'request_id' => $this->data['request_id'],
-            'type' => 'connection_request',
+            'event_id' => $this->data['event_id'],
+            'type' => 'tuition_event',
             'audience_role' => $notifiable->role,
         ]);
     }
