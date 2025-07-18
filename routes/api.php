@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ConnectionRequest\ConnectionRequestController;
+use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\TuitionEvent\TuitionEventController;
+use Illuminate\Support\Facades\Route;
 
 // auth routes (no authentication required)
 Route::post('register', [AuthController::class, 'register'])->name('register');
@@ -24,4 +26,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/tuition-events/respond/{id}', [TuitionEventController::class, 'respond']);
     Route::get('/tuition-events/my', [TuitionEventController::class, 'myEvents']);
     Route::get('/tuition-events/pending', [TuitionEventController::class, 'myPendingEvents']);
+
+
+    // notification routes
+    Route::get('/users/{userId}/notifications', [NotificationController::class, 'index']);
 });
