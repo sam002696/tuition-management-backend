@@ -3,7 +3,10 @@
 namespace App\Services\ConnectionRequest;
 
 use App\Models\ConnectionRequest;
+use App\Models\User;
+use App\Notifications\ConnectionRequestNotification;
 use App\Services\ResponseBuilder\ApiResponseService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -18,7 +21,7 @@ class ConnectionRequestService
 
         $teacher = Auth::user();
         if ($teacher->role !== 'teacher') {
-            return ApiResponseService::errorResponse('Only teachers can send requests.', 403);
+            abort(403, 'Only teachers can send requests.');
         }
 
         // Check if already connected (accepted)
@@ -29,10 +32,7 @@ class ConnectionRequestService
         ])->first();
 
         if ($existingAccepted) {
-            return ApiResponseService::errorResponse(
-                'You are already connected with this student.',
-                409
-            );
+            abort(409, 'You are already connected with this student.');
         }
 
         // Check if there's a pending request
@@ -43,10 +43,7 @@ class ConnectionRequestService
         ])->first();
 
         if ($existingPending) {
-            return ApiResponseService::errorResponse(
-                'A pending request already exists for this student.',
-                409
-            );
+            abort(409, 'A pending request already exists for this student.');
         }
 
         // Now safe to create a new request (including if previous was rejected)
@@ -57,7 +54,19 @@ class ConnectionRequestService
         ]);
 
 
-        //  TODO:  notification trigger here
+        // notification trigger here
+
+
+        // finding the student to notify
+        $student = User::findOrFail($validated['student_id']);
+
+        // Notify the student about the new request
+        $student->notify(new ConnectionRequestNotification([
+            'title' => 'New Connection Request',
+            'body' => "{$teacher->name} sent you a request.",
+            'request_id' => $connection->id,
+        ]));
+
         return $connection;
     }
 
@@ -69,7 +78,7 @@ class ConnectionRequestService
 
         $student = Auth::user();
         if ($student->role !== 'student') {
-            ApiResponseService::errorResponse(403, 'Only students can respond to requests.');
+            abort(403, 'Only students can respond to requests.');
         }
 
         $connection = ConnectionRequest::where('id', $id)
@@ -78,7 +87,21 @@ class ConnectionRequestService
 
         $connection->update(['status' => $validated['status']]);
 
-        // TODO:  notification trigger here
+
+        //  notification trigger here
+
+
+        // finding the teacher to notify
+        $teacher = User::findOrFail($connection->teacher_id);
+
+
+        // Notify the teacher about the response
+        $teacher->notify(new ConnectionRequestNotification([
+            'title' => "Request {$connection->status}",
+            'body' => "{$student->name} has {$connection->status} your connection request.",
+            'request_id' => $connection->id,
+        ]));
+
         return $connection;
     }
 
