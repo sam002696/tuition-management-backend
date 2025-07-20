@@ -58,8 +58,8 @@ class ApiResponseService
         return response()->json([
             'data' => null,
             'status' => 'error',
-            'message' => 'Something went wrong',
-            'errors' => $exception->getMessage()
+            'message' => $exception->getMessage(),
+            'errors' => app()->environment('local') ? $exception->getTrace() : null,
         ], 500);
     }
 

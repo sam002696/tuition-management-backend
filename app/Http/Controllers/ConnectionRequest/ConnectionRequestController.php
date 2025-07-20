@@ -52,14 +52,29 @@ class ConnectionRequestController extends Controller
         }
     }
 
-    public function listMyConnections(Request $request)
+    public function listMyPendingConnections(Request $request)
     {
         try {
-            $requests = $this->connectionService->getUserRequests($request->user());
+            $requests = $this->connectionService->getUserPendingRequests($request->user());
 
             return ApiResponseService::successResponse(
                 ['requests' => $requests],
                 'Connection requests fetched'
+            );
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
+    public function listAllAcceptedConnections(Request $request)
+    {
+        try {
+            $requests = $this->connectionService->getAllAcceptedConnections();
+
+            return ApiResponseService::successResponse(
+                ['requests' => $requests],
+                'All connection requests fetched'
             );
         } catch (Exception $e) {
             return ApiResponseService::handleUnexpectedError($e);

@@ -36,6 +36,13 @@ class AuthService
             'role' => $validated['role'],
         ]);
 
+        // Generate custom SID/TID from phone
+        if ($user->phone) {
+            $prefix = $user->role === 'student' ? 'S' : 'T';
+            $user->custom_id = $prefix . $user->phone;
+            $user->save();
+        }
+
         return $user;
     }
 
