@@ -97,4 +97,25 @@ class ConnectionRequestController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
+
+
+    public function disconnectStudentConnection($id)
+    {
+        try {
+            $requestData = $this->connectionService->disconnectConnection($id);
+
+            return ApiResponseService::successResponse(
+                ['connection' => $requestData],
+                'Connection disconnected successfully.'
+            );
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
+
+
 }

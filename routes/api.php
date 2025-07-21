@@ -20,6 +20,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/connection/respond/{id}', [ConnectionRequestController::class, 'respond']);
     Route::get('/connection/my-pending-requests', [ConnectionRequestController::class, 'listMyPendingConnections']);
     Route::get('/connection/my-accepted-requests', [ConnectionRequestController::class, 'listAllAcceptedActiveConnections']);
+    Route::patch('/connections/{id}/disconnect', [ConnectionRequestController::class, 'disconnectStudentConnection']);
+
 
 
     // tuition event routes
