@@ -16,7 +16,7 @@ class ConnectionRequestService
     public function sendRequest(Request $request)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:users,id',
+            'custom_id' => 'required|exists:users,custom_id',
         ]);
 
         $teacher = Auth::user();
@@ -24,10 +24,13 @@ class ConnectionRequestService
             abort(403, 'Only teachers can send requests.');
         }
 
+        // Lookup student by custom_id
+        $student = User::where('custom_id', $validated['custom_id'])->firstOrFail();
+
         // Check if already connected (accepted)
         $existingAccepted = ConnectionRequest::where([
             ['teacher_id', $teacher->id],
-            ['student_id', $validated['student_id']],
+            ['student_id', $student->id],
             ['status', 'accepted'],
         ])->first();
 
@@ -38,7 +41,7 @@ class ConnectionRequestService
         // Check if there's a pending request
         $existingPending = ConnectionRequest::where([
             ['teacher_id', $teacher->id],
-            ['student_id', $validated['student_id']],
+            ['student_id', $student->id],
             ['status', 'pending'],
         ])->first();
 
@@ -49,7 +52,7 @@ class ConnectionRequestService
         // Now safe to create a new request (including if previous was rejected)
         $connection = ConnectionRequest::create([
             'teacher_id' => $teacher->id,
-            'student_id' => $validated['student_id'],
+            'student_id' => $student->id,
             'status' => 'pending',
         ]);
 
@@ -58,7 +61,7 @@ class ConnectionRequestService
 
 
         // finding the student to notify
-        $student = User::findOrFail($validated['student_id']);
+        // $student = User::findOrFail($validated['student_id']);
 
         // Notify the student about the new request
         $student->notify(new ConnectionRequestNotification([
