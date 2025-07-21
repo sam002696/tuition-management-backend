@@ -105,14 +105,41 @@ class ConnectionRequestService
         return $connection;
     }
 
-    public function getUserRequests($user)
+    public function getUserPendingRequests($user)
     {
+        // fetching requests based on user role and status pending
         if ($user->role === 'teacher') {
-            return ConnectionRequest::with('student')->where('teacher_id', $user->id)->get();
+            return ConnectionRequest::with('student')
+                ->where('teacher_id', $user->id)
+                ->where('status', 'pending')
+                ->get();
         }
 
+        // fetching requests for students based on their role and status pending
         if ($user->role === 'student') {
-            return ConnectionRequest::with('teacher')->where('student_id', $user->id)->get();
+            return ConnectionRequest::with('teacher')
+                ->where('student_id', $user->id)
+                ->where('status', 'pending')
+                ->get();
+        }
+
+        return collect();
+    }
+
+    public function getAllAcceptedConnections()
+    {
+        if (Auth::user()->role === 'teacher') {
+            return ConnectionRequest::with('student')
+                ->where('teacher_id', Auth::id())
+                ->where('status', 'accepted')
+                ->get();
+        }
+
+        if (Auth::user()->role === 'student') {
+            return ConnectionRequest::with('teacher')
+                ->where('student_id', Auth::id())
+                ->where('status', 'accepted')
+                ->get();
         }
 
         return collect();
