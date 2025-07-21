@@ -75,6 +75,7 @@ class ConnectionRequestService
         $connection = ConnectionRequest::create([
             'teacher_id' => $teacher->id,
             'student_id' => $student->id,
+            'is_active' => true,
             'status' => 'pending',
         ]);
 
@@ -151,12 +152,13 @@ class ConnectionRequestService
         return collect();
     }
 
-    public function getAllAcceptedConnections()
+    public function getAllAcceptedActiveConnections()
     {
         if (Auth::user()->role === 'teacher') {
             return ConnectionRequest::with('student')
                 ->where('teacher_id', Auth::id())
                 ->where('status', 'accepted')
+                ->where('is_active', true)
                 ->get();
         }
 
@@ -164,6 +166,7 @@ class ConnectionRequestService
             return ConnectionRequest::with('teacher')
                 ->where('student_id', Auth::id())
                 ->where('status', 'accepted')
+                ->where('is_active', true)
                 ->get();
         }
 

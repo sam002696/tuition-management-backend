@@ -84,10 +84,10 @@ class ConnectionRequestController extends Controller
     }
 
 
-    public function listAllAcceptedConnections(Request $request)
+    public function listAllAcceptedActiveConnections(Request $request)
     {
         try {
-            $requests = $this->connectionService->getAllAcceptedConnections();
+            $requests = $this->connectionService->getAllAcceptedActiveConnections();
 
             return ApiResponseService::successResponse(
                 ['requests' => $requests],
