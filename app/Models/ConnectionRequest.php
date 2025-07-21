@@ -11,6 +11,7 @@ class ConnectionRequest extends Model
         'teacher_id',
         'student_id',
         'status',
+        'is_active', // Added is_active field
     ];
 
     public function teacher(): BelongsTo
