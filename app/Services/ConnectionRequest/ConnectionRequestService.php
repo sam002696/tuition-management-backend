@@ -172,4 +172,30 @@ class ConnectionRequestService
 
         return collect();
     }
+
+
+    // disconnecting a student connection
+
+    public function disconnectConnection($id)
+    {
+        $authUser = Auth::user();
+
+        $connection = ConnectionRequest::where('id', $id)
+            ->where('status', 'accepted')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$connection) {
+            abort(404, 'Connection not found or already inactive');
+        }
+
+        if ($authUser->id !== $connection->teacher_id) {
+            abort(403, 'Only the teacher can disconnect the connection');
+        }
+
+        $connection->update(['is_active' => false]);
+
+        return $connection;
+    }
+
 }
