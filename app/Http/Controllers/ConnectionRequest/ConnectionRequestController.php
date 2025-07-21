@@ -19,6 +19,23 @@ class ConnectionRequestController extends Controller
         $this->connectionService = $connectionService;
     }
 
+    public function findStudent(Request $request)
+    {
+        try {
+            $requestData = $this->connectionService->findStudentByCustomId($request);
+
+            return ApiResponseService::successResponse(
+                ['details' => $requestData],
+                'Connection request sent successfully',
+                201
+            );
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
     public function send(Request $request)
     {
         try {
