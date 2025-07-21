@@ -13,6 +13,28 @@ use Illuminate\Validation\Rule;
 
 class ConnectionRequestService
 {
+    // find student by custom_id only
+
+    public function findStudentByCustomId(Request $request)
+    {
+
+        $validated = $request->validate([
+            'custom_id' => 'required|exists:users,custom_id',
+        ]);
+
+        $teacher = Auth::user();
+        if ($teacher->role !== 'teacher') {
+            abort(403, 'Only teachers can fetch student info');
+        }
+
+        $student = User::where('custom_id', $validated['custom_id'])->firstOrFail();
+
+
+        return $student;
+
+    }
+
+
     public function sendRequest(Request $request)
     {
         $validated = $request->validate([

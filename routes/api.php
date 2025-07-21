@@ -15,6 +15,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // connection request routes
 
+    Route::get('/student-details', [ConnectionRequestController::class, 'findStudent']);
     Route::post('/connection/send', [ConnectionRequestController::class, 'send']);
     Route::post('/connection/respond/{id}', [ConnectionRequestController::class, 'respond']);
     Route::get('/connection/my-pending-requests', [ConnectionRequestController::class, 'listMyPendingConnections']);
