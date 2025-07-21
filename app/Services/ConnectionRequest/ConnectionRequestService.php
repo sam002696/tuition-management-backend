@@ -31,7 +31,6 @@ class ConnectionRequestService
 
 
         return $student;
-
     }
 
 
@@ -39,6 +38,7 @@ class ConnectionRequestService
     {
         $validated = $request->validate([
             'custom_id' => 'required|exists:users,custom_id',
+            'tuition_details_id' => 'required|exists:tuition_details,id',
         ]);
 
         $teacher = Auth::user();
@@ -75,6 +75,7 @@ class ConnectionRequestService
         $connection = ConnectionRequest::create([
             'teacher_id' => $teacher->id,
             'student_id' => $student->id,
+            'tuition_details_id' => $validated['tuition_details_id'],
             'is_active' => true,
             'status' => 'pending',
         ]);
@@ -197,5 +198,4 @@ class ConnectionRequestService
 
         return $connection;
     }
-
 }
