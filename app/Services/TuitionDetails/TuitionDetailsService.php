@@ -14,7 +14,7 @@ class TuitionDetailsService
             'student_id' => $request->student_id,
             'tuition_type' => $request->tuition_type,
             'class_level' => $request->class_level,
-            'subject_list' => json_encode($request->subject_list),
+            'subject_list' => $request->subject_list,
             'medium' => $request->medium,
             'institute_name' => $request->institute_name,
             'address_line' => $request->address_line,
@@ -24,7 +24,7 @@ class TuitionDetailsService
 
             'tuition_days_per_week' => $request->tuition_days_per_week,
             'hours_per_day' => $request->hours_per_day,
-            'days_name' => $request->days_name ? json_encode($request->days_name) : null,
+            'days_name' => $request->days_name ? $request->days_name : null,
             'salary_per_month' => $request->salary_per_month,
             'starting_month' => $request->starting_month,
 

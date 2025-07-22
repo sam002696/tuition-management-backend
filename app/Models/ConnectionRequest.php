@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ConnectionRequest extends Model
 {
     protected $fillable = [
+        'tuition_details_id', // Added tuition_details_id field
         'teacher_id',
         'student_id',
         'status',
