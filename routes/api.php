@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ConnectionRequest\ConnectionRequestController;
 use App\Http\Controllers\Notification\NotificationController;
+use App\Http\Controllers\TuitionDetails\TuitionDetailsController;
 use App\Http\Controllers\TuitionEvent\TuitionEventController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/tuition-events/respond/{id}', [TuitionEventController::class, 'respond']);
     Route::get('/tuition-events/my', [TuitionEventController::class, 'myEvents']);
     Route::get('/tuition-events/pending', [TuitionEventController::class, 'myPendingEvents']);
+
+
+    // tuition details routes
+
+    Route::prefix('tuition-details')->group(function () {
+        Route::post('/', [TuitionDetailsController::class, 'store']);
+    });
 
 
     // notification routes
