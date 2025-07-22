@@ -136,7 +136,7 @@ class ConnectionRequestService
     {
         // fetching requests based on user role and status pending
         if ($user->role === 'teacher') {
-            return ConnectionRequest::with('student')
+            return ConnectionRequest::with(['student', 'tuitionDetails'])
                 ->where('teacher_id', $user->id)
                 ->where('status', 'pending')
                 ->get();
@@ -144,7 +144,7 @@ class ConnectionRequestService
 
         // fetching requests for students based on their role and status pending
         if ($user->role === 'student') {
-            return ConnectionRequest::with('teacher')
+            return ConnectionRequest::with(['teacher', 'tuitionDetails'])
                 ->where('student_id', $user->id)
                 ->where('status', 'pending')
                 ->get();
