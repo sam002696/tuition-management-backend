@@ -41,10 +41,14 @@ class TuitionDetailsService
     //     return TuitionDetails::with(['teacher', 'student'])->get();
     // }
 
-    public function getById($id)
+    public function getByTeacherAndStudent($teacherId, $studentId)
     {
-        return TuitionDetails::with(['teacher', 'student'])->findOrFail($id);
+        return TuitionDetails::with(['teacher', 'student'])
+            ->where('teacher_id', $teacherId)
+            ->where('student_id', $studentId)
+            ->firstOrFail();
     }
+
 
     // public function delete($id)
     // {

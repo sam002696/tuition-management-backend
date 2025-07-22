@@ -7,6 +7,7 @@ use App\Http\Requests\TuitionDetailsRequest;
 use App\Services\ResponseBuilder\ApiResponseService;
 use App\Services\TuitionDetails\TuitionDetailsService;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 class TuitionDetailsController extends Controller
@@ -34,4 +35,22 @@ class TuitionDetailsController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
+
+
+    public function getByTeacherAndStudent($teacherId, $studentId)
+    {
+        try {
+            $data = $this->tuitionService->getByTeacherAndStudent($teacherId, $studentId);
+
+            return ApiResponseService::successResponse(
+                ['tuition_details' => $data],
+                'Tuition details fetched successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return ApiResponseService::errorResponse('No tuition details found for the given teacher and student.', 404);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
 }
