@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class TuitionDetails extends Model
 {
     protected $fillable = [
+        'teacher_id',
+        'student_id',
         'tuition_type',
         'class_level',
         'subject_list',
@@ -41,4 +43,16 @@ class TuitionDetails extends Model
     {
         return $this->hasMany(ConnectionRequest::class);
     }
+
+
+    public function teacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(User::class, 'student_id');
+    }
+
 }
