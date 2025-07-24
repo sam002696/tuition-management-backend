@@ -69,6 +69,23 @@ class ConnectionRequestController extends Controller
         }
     }
 
+    public function listConnections(Request $request)
+    {
+        try {
+            $result = $this->connectionService->getFilteredConnections(
+                $request->user(),
+                $request->query('status'),   //  'pending', 'accepted', 'rejected'
+                $request->query('is_active'),      //  'true', 'false', or null
+                $request->query('per_page', 10)    // pagination size
+            );
+
+            return ApiResponseService::successResponse($result, 'Connection requests fetched successfully');
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
     public function listMyPendingConnections(Request $request)
     {
         try {
