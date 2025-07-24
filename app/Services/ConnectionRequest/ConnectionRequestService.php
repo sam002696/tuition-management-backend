@@ -174,6 +174,54 @@ class ConnectionRequestService
         return collect();
     }
 
+    public function getFilteredConnections($user, $status = null, $isActive = null, $perPage = 10)
+    {
+        $query = ConnectionRequest::query();
+
+        // Role-based filtering
+        if ($user->role === 'teacher') {
+            $query->with(['student', 'tuitionDetails'])->where('teacher_id', $user->id);
+        } elseif ($user->role === 'student') {
+            $query->with(['teacher', 'tuitionDetails'])->where('student_id', $user->id);
+        } else {
+            return [
+                'requests' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'total_pages' => 0,
+                    'has_more_pages' => false,
+                ]
+            ];
+        }
+
+        // Dynamic filtering
+        if (!is_null($status)) {
+            $query->where('status', $status);
+        }
+
+        if (!is_null($isActive)) {
+            $query->where('is_active', filter_var($isActive, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // Paginate
+        $paginated = $query->latest()->paginate($perPage);
+
+        // Format response
+        return [
+            'requests' => $paginated->items(),
+            'pagination' => [
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'total_pages' => $paginated->lastPage(),
+                'has_more_pages' => $paginated->hasMorePages(),
+            ]
+        ];
+    }
+
+
 
     // disconnecting a student connection
 
