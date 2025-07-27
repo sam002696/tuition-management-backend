@@ -26,7 +26,7 @@ class ConnectionRequestController extends Controller
 
             return ApiResponseService::successResponse(
                 ['details' => $requestData],
-                'Connection request sent successfully',
+                'Student details fetched successfully',
                 201
             );
         } catch (ValidationException $e) {
@@ -131,8 +131,4 @@ class ConnectionRequestController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
-
-
-
-
 }

@@ -9,6 +9,17 @@ class TuitionDetailsService
 {
     public function create(Request $request)
     {
+
+        // Check if the same teacher-student pair already has a tuition
+        $exists = TuitionDetails::where('teacher_id', $request->teacher_id)
+            ->where('student_id', $request->student_id)
+            ->exists();
+
+        if ($exists) {
+            abort(409, 'Tuition details already exist for this teacher and student.');
+        }
+
+
         return TuitionDetails::create([
             'teacher_id' => $request->teacher_id,
             'student_id' => $request->student_id,
