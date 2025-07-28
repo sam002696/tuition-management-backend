@@ -114,16 +114,44 @@ class TuitionEventService
     }
 
 
-    public function getPendingForStudent()
+    public function getPendingEvents()
+    {
+
+        if (Auth::user()->role === 'teacher') {
+            return TuitionEvent::with('student')
+                ->where('teacher_id', Auth::id())
+                ->where('status', 'pending')
+                ->orderBy('scheduled_at', 'asc')
+                ->get();
+        }
+
+        if (Auth::user()->role === 'student') {
+            return TuitionEvent::with('teacher')
+                ->where('student_id', Auth::id())
+                ->where('status', 'pending')
+                ->orderBy('scheduled_at', 'asc')
+                ->get();
+        }
+
+        return collect();
+    }
+
+
+    public function getEventsForStudentTeacher(Request $request)
     {
         $user = Auth::user();
 
-        if ($user->role !== 'student') {
-            ApiResponseService::errorResponse(403, 'Only students can view pending events.');
+        if ($user->role !== 'teacher') {
+            abort(403, 'Only teachers can access this route.');
         }
 
-        return TuitionEvent::where('student_id', $user->id)
-            ->where('status', 'pending')
+        $validated = $request->validate([
+            'student_id' => 'required|exists:users,id',
+        ]);
+
+        return TuitionEvent::with('student')
+            ->where('teacher_id', $user->id)
+            ->where('student_id', $validated['student_id'])
             ->orderBy('scheduled_at', 'asc')
             ->get();
     }

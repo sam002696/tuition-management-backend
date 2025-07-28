@@ -65,7 +65,7 @@ class TuitionEventController extends Controller
     public function myPendingEvents()
     {
         try {
-            $events = $this->service->getPendingForStudent();
+            $events = $this->service->getPendingEvents();
 
             return ApiResponseService::successResponse(
                 ['events' => $events],
@@ -76,4 +76,17 @@ class TuitionEventController extends Controller
         }
     }
 
+    public function getEventsWithStudent(Request $request)
+    {
+        try {
+            $events = $this->service->getEventsForStudentTeacher($request);
+
+            return ApiResponseService::successResponse(
+                ['events' => $events],
+                'Pending events with specific student loaded'
+            );
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
 }
