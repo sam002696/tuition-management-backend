@@ -156,7 +156,7 @@ class ConnectionRequestService
     public function getAllAcceptedActiveConnections()
     {
         if (Auth::user()->role === 'teacher') {
-            return ConnectionRequest::with('student')
+            return ConnectionRequest::with(['student', 'tuitionDetails'])
                 ->where('teacher_id', Auth::id())
                 ->where('status', 'accepted')
                 ->where('is_active', true)

@@ -38,6 +38,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/tuition-events/respond/{id}', [TuitionEventController::class, 'respond']);
     Route::get('/tuition-events/my', [TuitionEventController::class, 'myEvents']);
     Route::get('/tuition-events/pending', [TuitionEventController::class, 'myPendingEvents']);
+    Route::get('/tuition-events/student', [TuitionEventController::class, 'getEventsWithStudent']);
 
 
     // tuition details routes
