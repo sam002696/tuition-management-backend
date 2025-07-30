@@ -269,4 +269,44 @@ class ConnectionRequestService
 
         return $connection;
     }
+
+
+    // get the count of is_active (true) and accepted, pending and is_active(false) and accepted
+
+    public function getConnectionCounts()
+    {
+        $user = Auth::user();
+
+        if (!in_array($user->role, ['teacher', 'student'])) {
+            abort(403, 'Unauthorized user role.');
+        }
+
+        $query = ConnectionRequest::query();
+
+        if ($user->role === 'teacher') {
+            $query->where('teacher_id', $user->id);
+        } else {
+            $query->where('student_id', $user->id);
+        }
+
+        $activeAcceptedCount = (clone $query)
+            ->where('status', 'accepted')
+            ->where('is_active', true)
+            ->count();
+
+        $inactiveAcceptedCount = (clone $query)
+            ->where('status', 'accepted')
+            ->where('is_active', false)
+            ->count();
+
+        $pendingCount = (clone $query)
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'active_accepted' => $activeAcceptedCount,
+            'inactive_accepted' => $inactiveAcceptedCount,
+            'pending' => $pendingCount,
+        ];
+    }
 }
