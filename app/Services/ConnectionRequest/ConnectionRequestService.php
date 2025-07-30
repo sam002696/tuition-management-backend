@@ -221,7 +221,30 @@ class ConnectionRequestService
         ];
     }
 
+    // check the connection status of teacher student
 
+    public function checkConnectionStatus(Request $request)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'teacher') {
+            abort(409, "Only a teacher can check connection request");
+        }
+
+        $validated = $request->validate([
+            'student_id' => 'required|exists:users,id',
+        ]);
+
+        $connection = ConnectionRequest::where('teacher_id', $user->id)
+            ->where('student_id', $validated['student_id'])
+            ->latest()
+            ->first();
+
+        if (!$connection) {
+            abort(409, "connection not found!");
+        }
+
+        return $connection->status;
+    }
 
     // disconnecting a student connection
 
