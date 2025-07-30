@@ -116,6 +116,24 @@ class ConnectionRequestController extends Controller
     }
 
 
+    public function checkConnectionStatus(Request $request)
+    {
+        try {
+            $status = $this->connectionService->checkConnectionStatus($request);
+
+            return ApiResponseService::successResponse(
+                ['status' => $status],
+                'Connection status fetched successfully'
+            );
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
+
     public function disconnectStudentConnection($id)
     {
         try {
