@@ -240,7 +240,7 @@ class ConnectionRequestService
             ->first();
 
         if (!$connection) {
-            abort(409, "connection not found!");
+            abort(404, "Connection not found!");
         }
 
         return $connection->status;
