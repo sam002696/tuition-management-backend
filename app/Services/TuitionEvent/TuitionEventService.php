@@ -26,7 +26,8 @@ class TuitionEventService
             'student_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'scheduled_at' => 'required|date|after:now',
+            // 'scheduled_at' => 'required|date|after:now',
+            'scheduled_at' => 'required|date',
         ]);
 
         $connection = ConnectionRequest::where([
