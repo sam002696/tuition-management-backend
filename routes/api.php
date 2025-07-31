@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/connection/my-pending-requests', [ConnectionRequestController::class, 'listMyPendingConnections']);
     Route::get('/connection/my-accepted-requests', [ConnectionRequestController::class, 'listAllAcceptedActiveConnections']);
     Route::post('/connection/check-connection-status', [ConnectionRequestController::class, 'checkConnectionStatus']);
+    Route::get('/connections/count', [ConnectionRequestController::class, 'countConnection']);
 
     // filtered connections
 

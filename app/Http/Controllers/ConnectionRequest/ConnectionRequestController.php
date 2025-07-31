@@ -149,4 +149,21 @@ class ConnectionRequestController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
+
+
+    public function countConnection()
+    {
+        try {
+            $requestData = $this->connectionService->getConnectionCounts();
+
+            return ApiResponseService::successResponse(
+                ['connection_count' => $requestData],
+                'Connection count successfully.'
+            );
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
 }
