@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 // use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 class TuitionEventNotification extends Notification
 {
@@ -64,11 +65,20 @@ class TuitionEventNotification extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
-            'title' => $this->data['title'],
-            'body' => $this->data['body'],
-            'event_id' => $this->data['event_id'],
-            'type' => 'tuition_event',
-            'audience_role' => $notifiable->role,
+            'id' => $this->id ?? null,
+            'type' => static::class,
+            'notifiable_type' => get_class($notifiable),
+            'notifiable_id' => $notifiable->getKey(),
+            'read_at' => null,
+            'created_at' => Carbon::now()->toISOString(),
+            'updated_at' => Carbon::now()->toISOString(),
+            'data' => [
+                'title' => $this->data['title'],
+                'body' => $this->data['body'],
+                'event_id' => $this->data['event_id'],
+                'type' => 'tuition_event',
+                'audience_role' => $notifiable->role,
+            ]
         ]);
     }
 
