@@ -174,7 +174,7 @@ class ConnectionRequestService
         return collect();
     }
 
-    public function getFilteredConnections($user, $status = null, $isActive = null, $perPage = 10)
+    public function getFilteredConnections($user, $status = null, $isActive = null, $perPage = 10, $search = null)
     {
         $query = ConnectionRequest::query();
 
@@ -203,6 +203,16 @@ class ConnectionRequestService
 
         if (!is_null($isActive)) {
             $query->where('is_active', filter_var($isActive, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // ---- Dynamic "counterparty name" search ----
+        $search = trim((string) $search);
+        if ($search !== '') {
+            // Teachers search students, students search teachers
+            $relation = $user->role === 'teacher' ? 'student' : 'teacher';
+            $query->whereHas($relation, function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
         }
 
         // Paginate

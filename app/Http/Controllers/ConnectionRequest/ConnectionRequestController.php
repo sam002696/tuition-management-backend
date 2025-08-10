@@ -76,7 +76,8 @@ class ConnectionRequestController extends Controller
                 $request->user(),
                 $request->query('status'),   //  'pending', 'accepted', 'rejected'
                 $request->query('is_active'),      //  'true', 'false', or null
-                $request->query('per_page', 10)    // pagination size
+                $request->query('per_page', 10),   // pagination size
+                $request->query('search')
             );
 
             return ApiResponseService::successResponse($result, 'Connection requests fetched successfully');
