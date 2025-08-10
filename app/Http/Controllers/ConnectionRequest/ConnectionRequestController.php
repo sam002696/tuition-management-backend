@@ -76,7 +76,8 @@ class ConnectionRequestController extends Controller
                 $request->user(),
                 $request->query('status'),   //  'pending', 'accepted', 'rejected'
                 $request->query('is_active'),      //  'true', 'false', or null
-                $request->query('per_page', 10)    // pagination size
+                $request->query('per_page', 10),   // pagination size
+                $request->query('search')
             );
 
             return ApiResponseService::successResponse($result, 'Connection requests fetched successfully');
@@ -104,16 +105,20 @@ class ConnectionRequestController extends Controller
     public function listAllAcceptedActiveConnections(Request $request)
     {
         try {
-            $requests = $this->connectionService->getAllAcceptedActiveConnections();
+            $result = $this->connectionService->getAllAcceptedActiveConnections(
+                $request->query('per_page', 5),
+                $request->query('search')
+            );
 
             return ApiResponseService::successResponse(
-                ['requests' => $requests],
-                'All connection requests fetched'
+                $result,
+                'Accepted & active connections fetched successfully'
             );
         } catch (Exception $e) {
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
+
 
 
     public function checkConnectionStatus(Request $request)

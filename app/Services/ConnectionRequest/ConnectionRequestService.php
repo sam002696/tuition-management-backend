@@ -153,28 +153,60 @@ class ConnectionRequestService
         return collect();
     }
 
-    public function getAllAcceptedActiveConnections()
+    public function getAllAcceptedActiveConnections(int $perPage = 5, ?string $search = null)
     {
-        if (Auth::user()->role === 'teacher') {
-            return ConnectionRequest::with(['student', 'tuitionDetails'])
-                ->where('teacher_id', Auth::id())
-                ->where('status', 'accepted')
-                ->where('is_active', true)
-                ->get();
+        $user = Auth::user();
+
+        // Base query (accepted + active)
+        $query = ConnectionRequest::query()
+            ->where('status', 'accepted')
+            ->where('is_active', true);
+
+        // Role-based scope + eager loads
+        if ($user->role === 'teacher') {
+            $query->with(['student', 'tuitionDetails'])
+                ->where('teacher_id', $user->id);
+        } elseif ($user->role === 'student') {
+            $query->with(['teacher', 'tuitionDetails'])
+                ->where('student_id', $user->id);
+        } else {
+            return [
+                'requests' => [],
+                'pagination' => [
+                    'current_page'   => 1,
+                    'per_page'       => $perPage,
+                    'total'          => 0,
+                    'total_pages'    => 0,
+                    'has_more_pages' => false,
+                ],
+            ];
         }
 
-        if (Auth::user()->role === 'student') {
-            return ConnectionRequest::with('teacher')
-                ->where('student_id', Auth::id())
-                ->where('status', 'accepted')
-                ->where('is_active', true)
-                ->get();
+        // Role-aware search by counterparty name
+        $search = trim((string) $search);
+        if ($search !== '') {
+            $relation = $user->role === 'teacher' ? 'student' : 'teacher';
+            $query->whereHas($relation, function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
         }
 
-        return collect();
+        // Paginate (latest first)
+        $paginated = $query->latest()->paginate($perPage);
+
+        return [
+            'requests' => $paginated->items(),
+            'pagination' => [
+                'current_page'   => $paginated->currentPage(),
+                'per_page'       => $paginated->perPage(),
+                'total'          => $paginated->total(),
+                'total_pages'    => $paginated->lastPage(),
+                'has_more_pages' => $paginated->hasMorePages(),
+            ],
+        ];
     }
 
-    public function getFilteredConnections($user, $status = null, $isActive = null, $perPage = 10)
+    public function getFilteredConnections($user, $status = null, $isActive = null, $perPage = 10, $search = null)
     {
         $query = ConnectionRequest::query();
 
@@ -203,6 +235,16 @@ class ConnectionRequestService
 
         if (!is_null($isActive)) {
             $query->where('is_active', filter_var($isActive, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // ---- Dynamic "counterparty name" search ----
+        $search = trim((string) $search);
+        if ($search !== '') {
+            // Teachers search students, students search teachers
+            $relation = $user->role === 'teacher' ? 'student' : 'teacher';
+            $query->whereHas($relation, function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            });
         }
 
         // Paginate
