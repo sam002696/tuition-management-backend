@@ -1,61 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tuition Management Backend (Laravel) — Docker Quick Start
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A clean, dev-friendly Docker setup for a Laravel API with **PHP 8.2 FPM + Nginx + MySQL** and a **queue worker**. Broadcasting uses **Pusher** (hosted).
 
-## About Laravel
+> **API Base URL (default):** `http://localhost:8080`
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Table of Contents
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+-   [Overview](#overview)
+-   [Prerequisites](#prerequisites)
+-   [Project Structure](#project-structure)
+-   [Environment Setup](#environment-setup)
+    -   [.env](#env)
+    -   [.env.docker](#envdocker)
+-   [Start with Docker](#start-with-docker)
+-   [First-Time Laravel Setup](#first-time-laravel-setup)
+-   [Services & Ports](#services--ports)
+-   [Common Commands](#common-commands)
+-   [Queue Worker](#queue-worker)
+-   [Troubleshooting](#troubleshooting)
+-   [Using Host MySQL (Optional)](#using-host-mysql-optional)
+-   [Running Without Docker (Optional)](#running-without-docker-optional)
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Overview
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+-   **Stack**: PHP 8.2 FPM, Nginx, MySQL 8, Composer
+-   **Queues/Sessions/Cache**: Database driver
+-   **Broadcasting**: Pusher (WebSockets via hosted service)
+-   **Goal**: Let anyone run the backend quickly without installing PHP/MySQL locally
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## Prerequisites
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+-   **Docker Desktop** (or Docker Engine)
+-   **Git** (to clone the repository)
 
-### Premium Partners
+> No local PHP/MySQL/Composer required.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+---
 
-## Contributing
+## Project Structure
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Minimal paths relevant to Docker setup:
 
-## Code of Conduct
+```
+.
+├─ docker/
+│  ├─ nginx/
+│  │  └─ default.conf
+│  └─ php/
+│     └─ conf.d/
+│        └─ custom.ini         # optional PHP overrides (can be any path/name on host)
+├─ docker-compose.yml
+├─ Dockerfile
+├─ .env                        # Laravel environment
+└─ (Laravel app files)
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Environment Setup
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### .env
 
-## License
+Your repository should include a `.env` (or provide a sample). Ensure broadcasting is set to **Pusher**:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```env
+BROADCAST_CONNECTION=pusher
+# If your app uses BROADCAST_DRIVER instead, set:
+# BROADCAST_DRIVER=pusher
+```
+
+Also ensure your database connection is `mysql`.
+
+> Do **not** commit secrets. Keep credentials in `.env` locally.
+
+### .env.docker
+
+Create a new file `.env.docker` for values that need to be different **inside containers**:
+
+```env
+APP_URL=http://localhost:8080
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=tuition_db
+DB_USERNAME=root
+DB_PASSWORD=your_mysql_root_password
+
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+
+# Pusher (use your real keys here; not placeholders)
+PUSHER_APP_ID=your_app_id
+PUSHER_APP_KEY=your_app_key
+PUSHER_APP_SECRET=your_app_secret
+PUSHER_APP_CLUSTER=ap2
+```
+
+> Inside Docker, the **DB host** is the service name `mysql`, not `127.0.0.1`.
+
+---
+
+## Start with Docker
+
+Build and start the stack:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+Visit the API at **http://localhost:8080**.
+
+---
+
+## First-Time Laravel Setup
+
+Run these **inside containers** (compose will route you to the right service):
+
+```bash
+# Install PHP deps
+docker compose exec app composer install
+
+# Generate app key (skip if APP_KEY already exists)
+docker compose exec app php artisan key:generate
+
+# Create tables for DB-backed drivers
+docker compose exec app php artisan session:table
+docker compose exec app php artisan cache:table
+docker compose exec app php artisan queue:table
+
+# Run migrations
+docker compose exec app php artisan migrate
+
+# (Optional) seed data
+# docker compose exec app php artisan db:seed
+
+# (Optional) storage symlink if you serve files
+docker compose exec app php artisan storage:link
+
+# Fix permissions if needed
+docker compose exec app sh -lc "chown -R www-data:www-data storage bootstrap/cache && chmod -R 775 storage bootstrap/cache"
+```
+
+---
+
+## Services & Ports
+
+| Service | Purpose         | Host Port → Container | Notes                           |
+| ------: | --------------- | --------------------- | ------------------------------- |
+|   nginx | HTTP entrypoint | `8080 → 80`           | Serves `/public` to the browser |
+|     app | PHP-FPM runtime | n/a                   | Runs PHP 8.2 + Composer         |
+|   mysql | Database        | `3307 → 3306`         | Use `localhost:3307` from host  |
+|   queue | Queue worker    | n/a                   | Runs `php artisan queue:work`   |
+
+> Change ports in `docker-compose.yml` if they clash on your machine.
+
+---
+
+## Common Commands
+
+```bash
+# Start / stop
+docker compose up -d
+docker compose down
+
+# Rebuild after Dockerfile changes
+docker compose build --no-cache
+
+# Artisan / Composer / Shell
+docker compose exec app php artisan <command>
+docker compose exec app composer <command>
+docker compose exec app sh
+
+# Logs
+docker compose logs -f nginx
+docker compose logs -f app
+docker compose logs -f queue
+
+# MySQL from host (Workbench/TablePlus):
+# host: localhost  port: 3307  user: root  pass: (from .env.docker)  db: tuition_db
+```
+
+---
+
+## Queue Worker
+
+A dedicated service runs the queue worker:
+
+```bash
+docker compose logs -f queue       # tail worker logs
+docker compose restart queue       # restart worker
+```
+
+If you use Laravel Horizon later, replace the queue command with `php artisan horizon`.
+
+---
+
+## Troubleshooting
+
+-   **SQLSTATE[HY000] [2002] Connection refused**  
+    Ensure `.env.docker` has `DB_HOST=mysql`. Restart containers after changes.
+
+-   **Port in use**  
+    Edit `docker-compose.yml` to use different host ports, e.g.:
+
+    ```yaml
+    nginx:
+        ports:
+            - "8081:80"
+    mysql:
+        ports:
+            - "3308:3306"
+    ```
+
+-   **Permissions (storage/cache)**  
+    Run the permission fix command shown in _First-Time Laravel Setup_.
+
+-   **Broadcasting still logs instead of Pusher**  
+    Make sure `BROADCAST_CONNECTION=pusher` (or `BROADCAST_DRIVER=pusher` depending on your config). Clear caches:
+    ```bash
+    docker compose exec app php artisan config:clear
+    docker compose exec app php artisan cache:clear
+    ```
+
+---
+
+## Using Host MySQL (Optional)
+
+If you already have MySQL installed and running locally, you can delete the `mysql` service from `docker-compose.yml` and set:
+
+```env
+DB_HOST=host.docker.internal
+DB_PORT=3306
+```
+
+---
+
+## Running Without Docker (Optional)
+
+If you prefer running locally:
+
+1. Install PHP 8.2, Composer, MySQL 8.
+2. Set `.env` to use your local DB:
+    ```env
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    ```
+3. Run:
+    ```bash
+    composer install
+    php artisan key:generate
+    php artisan migrate
+    php artisan serve   # http://127.0.0.1:8000
+    php artisan queue:work
+    ```
