@@ -83,7 +83,22 @@ class TuitionEventController extends Controller
 
             return ApiResponseService::successResponse(
                 ['events' => $events],
-                'Pending events with specific student loaded'
+                'Events with specific student loaded'
+            );
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+    // get events for a specific teacher for a logged in student
+    public function getEventsWithTeacher(Request $request)
+    {
+        try {
+            $events = $this->service->getEventsForTeacherStudent($request);
+
+            return ApiResponseService::successResponse(
+                ['events' => $events],
+                'Events with specific teacher loaded'
             );
         } catch (Exception $e) {
             return ApiResponseService::handleUnexpectedError($e);
