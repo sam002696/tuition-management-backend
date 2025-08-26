@@ -47,6 +47,68 @@ class TuitionDetailsService
         ]);
     }
 
+
+
+    /**
+     * Update a single TuitionDetails by its ID.
+     * - Allows partial updates (PATCH-friendly).
+     * - Prevents duplicate teacher-student pair conflicts if either one changes.
+     * - Auto-clears fields that don't apply to the final tuition_type (monthly_based vs course_based).
+     */
+    public function update(int $id, Request $request)
+    {
+        $tuition = TuitionDetails::findOrFail($id);
+
+        // Determine the final teacher/student for duplication check
+        $teacherId = $request->input('teacher_id', $tuition->teacher_id);
+        $studentId = $request->input('student_id', $tuition->student_id);
+
+        $duplicate = TuitionDetails::where('teacher_id', $teacherId)
+            ->where('student_id', $studentId)
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($duplicate) {
+            abort(409, 'Tuition details already exist for this teacher and student.');
+        }
+
+        // Only update fillable fields and only those present in the request
+        $payload = $request->only($tuition->getFillable());
+
+        // Figure out what the tuition_type will be after this update
+        $finalType = $payload['tuition_type'] ?? $tuition->tuition_type;
+
+        // Normalize mutually-exclusive fields based on the final tuition_type
+        if ($finalType === 'monthly_based') {
+            // Clear course-based fields
+            $payload['total_classes_per_course'] = null;
+            $payload['hours_per_class'] = null;
+            $payload['salary_per_subject'] = null;
+            $payload['total_course_completion_salary'] = null;
+            $payload['duration'] = null;
+        } elseif ($finalType === 'course_based') {
+            // Clear monthly-based fields
+            $payload['tuition_days_per_week'] = null;
+            $payload['hours_per_day'] = null;
+            $payload['days_name'] = null;
+            $payload['salary_per_month'] = null;
+            $payload['starting_month'] = null;
+        }
+
+        $tuition->fill($payload);
+        $tuition->save();
+
+        // return $tuition->load(['teacher', 'student']);
+    }
+
+
+
+    // Fetch a single TuitionDetails by its ID
+    public function getById(int $id)
+    {
+        return TuitionDetails::findOrFail($id);
+    }
+
     // public function getAll()
     // {
     //     return TuitionDetails::with(['teacher', 'student'])->get();
