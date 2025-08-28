@@ -351,4 +351,33 @@ class ConnectionRequestService
             'pending' => $pendingCount,
         ];
     }
+
+
+    // ...existing methods
+
+    /**
+     * Return ONE connection that belongs to the signed-in user.
+     * - Teacher gets: connection + student + tuitionDetails
+     * - Student gets: connection + teacher + tuitionDetails
+     */
+    public function getMineById(int $id)
+    {
+        $user = Auth::user();
+
+        if ($user->role === 'teacher') {
+            return ConnectionRequest::with(['student', 'tuitionDetails'])
+                ->where('id', $id)
+                ->where('teacher_id', $user->id)
+                ->firstOrFail();
+        }
+
+        if ($user->role === 'student') {
+            return ConnectionRequest::with(['teacher', 'tuitionDetails'])
+                ->where('id', $id)
+                ->where('student_id', $user->id)
+                ->firstOrFail();
+        }
+
+        abort(403, 'Only teachers or students can view a connection.');
+    }
 }
