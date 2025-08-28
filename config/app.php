@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'reset_link_base' => env('RESET_LINK_BASE', 'http://localhost:5800/reset-password'),
+
 ];

@@ -87,7 +87,7 @@ class AuthController extends Controller
     /**
      * Retrieving the currently authenticated user.
      *
-     * Assumes the request is authenticated via middleware.
+     *
      * Returns user information in a structured format.
      */
     public function user(Request $request)
@@ -98,5 +98,27 @@ class AuthController extends Controller
         );
     }
 
-    // user profile info  :: todo
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $this->authService->sendResetLink($request);
+            return ApiResponseService::successResponse([], 'If that email exists, a reset link has been sent.');
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+    public function resetPassword(Request $request)
+    {
+        try {
+            $this->authService->resetPassword($request);
+            return ApiResponseService::successResponse([], 'Password has been reset successfully.');
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
 }
