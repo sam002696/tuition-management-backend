@@ -121,4 +121,19 @@ class AuthController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
+
+
+    // change password 
+
+    public function changePassword(Request $request)
+    {
+        try {
+            $this->authService->changePassword($request);
+            return ApiResponseService::successResponse([], 'Password has been changed successfully.');
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
 }

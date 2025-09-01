@@ -18,6 +18,11 @@ Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->mi
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+
+    // change password route
+
+    Route::post('/password/change', [AuthController::class, 'changePassword']);
+
     // connection request routes
 
     Route::post('/student-details', [ConnectionRequestController::class, 'findStudent']);

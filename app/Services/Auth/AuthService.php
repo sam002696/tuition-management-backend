@@ -107,4 +107,34 @@ class AuthService
             abort(400, 'Unable to reset password.');
         }
     }
+
+
+    // change password service
+
+    public function changePassword(Request $request)
+    {
+        // Validate input
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'], // it  validates against the authenticated user
+            'new_password'     => ['required', 'string', 'min:6', 'max:255', 'confirmed', 'different:current_password'],
+        ], [
+            'current_password.current_password' => 'The current password is incorrect.',
+        ]);
+
+        $user = $request->user();
+
+
+        // Updating password
+        $user->forceFill([
+            'password' => Hash::make($validated['new_password']),
+        ])->save();
+
+        // Revoking all other tokens (keeping the one used for this request)
+        if (method_exists($user, 'tokens')) {
+            $current = $user->currentAccessToken();
+            $user->tokens()
+                ->when($current, fn($q) => $q->where('id', '!=', $current->id))
+                ->delete();
+        }
+    }
 }
