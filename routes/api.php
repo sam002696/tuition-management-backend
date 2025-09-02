@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ConnectionRequest\ConnectionRequestController;
 use App\Http\Controllers\Notification\NotificationController;
+use App\Http\Controllers\TeacherHome\TeacherHomeController;
 use App\Http\Controllers\TuitionDetails\TuitionDetailsController;
 use App\Http\Controllers\TuitionEvent\TuitionEventController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,10 @@ Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->mi
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // teacher home route
+
+    Route::get('/teacher/home', [TeacherHomeController::class, 'index']);
 
 
     // change password route
