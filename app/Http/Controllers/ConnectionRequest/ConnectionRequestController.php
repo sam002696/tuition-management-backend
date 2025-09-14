@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ConnectionRequest\ConnectionRequestService;
 use App\Services\ResponseBuilder\ApiResponseService;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -167,6 +168,24 @@ class ConnectionRequestController extends Controller
             );
         } catch (ValidationException $e) {
             return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
+    // GET /connections/{id}
+    public function show($id)
+    {
+        try {
+            $connection = $this->connectionService->getMineById((int) $id);
+
+            return ApiResponseService::successResponse(
+                ['connection' => $connection],
+                'Connection request fetched successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return ApiResponseService::errorResponse('Connection not found.', 404);
         } catch (Exception $e) {
             return ApiResponseService::handleUnexpectedError($e);
         }

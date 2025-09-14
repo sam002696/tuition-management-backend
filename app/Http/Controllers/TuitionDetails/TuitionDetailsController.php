@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+
 class TuitionDetailsController extends Controller
 {
     protected $tuitionService;
@@ -36,6 +37,47 @@ class TuitionDetailsController extends Controller
         }
     }
 
+    // Update tuition details
+
+    public function update($id, Request $request)
+    {
+        try {
+            $data = $this->tuitionService->update((int) $id, $request);
+
+            return ApiResponseService::successResponse(
+                ['tuition_details' => $data],
+                'Tuition details updated successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return ApiResponseService::errorResponse('Tuition details not found.', 404);
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
+
+    // Fetch tuition details by ID
+
+    public function show($id)
+    {
+        try {
+            $data = $this->tuitionService->getById((int) $id);
+
+            return ApiResponseService::successResponse(
+                ['tuition_details' => $data],
+                'Tuition details fetched successfully'
+            );
+        } catch (ModelNotFoundException $e) {
+            return ApiResponseService::errorResponse('Tuition details not found.', 404);
+        } catch (ValidationException $e) {
+            return ApiResponseService::handleValidationError($e);
+        } catch (Exception $e) {
+            return ApiResponseService::handleUnexpectedError($e);
+        }
+    }
+
 
     public function getByTeacherAndStudent($teacherId, $studentId)
     {
@@ -52,5 +94,4 @@ class TuitionDetailsController extends Controller
             return ApiResponseService::handleUnexpectedError($e);
         }
     }
-
 }

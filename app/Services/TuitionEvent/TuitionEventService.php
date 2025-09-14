@@ -156,4 +156,25 @@ class TuitionEventService
             ->orderBy('scheduled_at', 'asc')
             ->get();
     }
+
+
+    // get events for a specific teacher for a logged in student
+    public function getEventsForTeacherStudent(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'student') {
+            abort(403, 'Only students can access this route.');
+        }
+
+        $validated = $request->validate([
+            'teacher_id' => 'required|exists:users,id',
+        ]);
+
+        return TuitionEvent::with('student')
+            ->where('student_id', $user->id)
+            ->where('teacher_id', $validated['teacher_id'])
+            ->orderBy('scheduled_at', 'asc')
+            ->get();
+    }
 }
