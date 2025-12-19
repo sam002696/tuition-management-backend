@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RegisterUserRequest;
 use App\Services\Auth\AuthService;
 use App\Services\ResponseBuilder\ApiResponseService;
 
@@ -29,7 +30,7 @@ class AuthController extends Controller
      * Validates the incoming request and delegates user creation to AuthService.
      * Returns a structured success response or handles validation/unexpected errors.
      */
-    public function register(Request $request)
+    public function register(RegisterUserRequest $request)
     {
         try {
             // Delegating registration logic to AuthService
@@ -123,7 +124,7 @@ class AuthController extends Controller
     }
 
 
-    // change password 
+    // change password
 
     public function changePassword(Request $request)
     {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Http\Requests\RegisterUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -17,16 +18,10 @@ class AuthService
     /**
      * Registering a new user.
      */
-    public function registerUser(Request $request)
+    public function registerUser(RegisterUserRequest $request)
     {
         // Validate incoming request
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'nullable|string|unique:users,phone',
-            'password' => 'required|string|min:6',
-            'role' => ['required', Rule::in(['teacher', 'student'])],
-        ]);
+        $validated = $request->validated();
 
         // Creating user
         // Hashing the password before storing it
