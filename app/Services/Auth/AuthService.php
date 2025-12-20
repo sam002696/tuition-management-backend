@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth;
 
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,13 +48,10 @@ class AuthService
     /**
      * Authenticating user and generating sanctum token.
      */
-    public function loginUser(Request $request)
+    public function loginUser(LoginRequest $request) : ?array
     {
         // Validate incoming request
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
+        $credentials = $request->validated();
 
         // Attempting to authenticate user
         if (!Auth::attempt($credentials)) {

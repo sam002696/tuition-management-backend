@@ -8,6 +8,7 @@ use App\Notifications\ConnectionRequestNotification;
 use App\Services\ResponseBuilder\ApiResponseService;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
@@ -132,26 +133,41 @@ class ConnectionRequestService
         return $connection;
     }
 
-    public function getUserPendingRequests($user)
+    public function getUserPendingRequests($user) : Collection
     {
-        // fetching requests based on user role and status pending
         if ($user->role === 'teacher') {
-            return ConnectionRequest::with(['student', 'tuitionDetails'])
-                ->where('teacher_id', $user->id)
-                ->where('status', 'pending')
+            return ConnectionRequest::query()
+                ->join('tuition_details', 'tuition_details.id', '=', 'connection_requests.tuition_details_id')
+                ->join('users as students', 'students.id', '=', 'connection_requests.student_id')
+                ->where('connection_requests.teacher_id', $user->id)
+                ->where('connection_requests.status', 'pending')
+                ->select([
+                    'connection_requests.*',
+                    'tuition_details.class_level',
+                    'tuition_details.subject_list',
+                    'students.name as student_name',
+                ])
                 ->get();
         }
 
-        // fetching requests for students based on their role and status pending
         if ($user->role === 'student') {
-            return ConnectionRequest::with(['teacher', 'tuitionDetails'])
-                ->where('student_id', $user->id)
-                ->where('status', 'pending')
+            return ConnectionRequest::query()
+                ->join('tuition_details', 'tuition_details.id', '=', 'connection_requests.tuition_details_id')
+                ->join('users as teachers', 'teachers.id', '=', 'connection_requests.teacher_id')
+                ->where('connection_requests.student_id', $user->id)
+                ->where('connection_requests.status', 'pending')
+                ->select([
+                    'connection_requests.*',
+                    'tuition_details.class_level',
+                    'tuition_details.subject_list',
+                    'teachers.name as teacher_name',
+                ])
                 ->get();
         }
 
         return collect();
     }
+
 
     public function getAllAcceptedActiveConnections(int $perPage = 5, ?string $search = null)
     {

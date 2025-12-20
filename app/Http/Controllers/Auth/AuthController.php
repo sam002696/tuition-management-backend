@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Services\Auth\AuthService;
 use App\Services\ResponseBuilder\ApiResponseService;
@@ -56,7 +57,7 @@ class AuthController extends Controller
      * Validates credentials and generates authentication token if successful.
      * Returns structured response or error if credentials are invalid.
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         try {
             // Delegating login logic to AuthService

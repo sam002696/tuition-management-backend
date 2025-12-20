@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Route;
 
 // auth routes (no authentication required)
 Route::post('register', [AuthController::class, 'register'])->name('register');
-Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'login'])
+    ->name('login')
+    ->middleware('throttle:login');
 
 // password reset routes
 Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
