@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ConnectionRequest extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'tuition_details_id', // Added tuition_details_id field
         'teacher_id',
