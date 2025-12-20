@@ -15,8 +15,10 @@ Route::post('login', [AuthController::class, 'login'])
     ->middleware('throttle:login');
 
 // password reset routes
-Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:6,1');
-Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:6,1');
+Route::post('auth/forgot-password', [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:6,1');
+Route::post('auth/reset-password', [AuthController::class, 'resetPassword'])
+    ->middleware('throttle:6,1');
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -35,9 +37,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/student-details', [ConnectionRequestController::class, 'findStudent']);
     Route::post('/connection/send', [ConnectionRequestController::class, 'send']);
     Route::post('/connection/respond/{id}', [ConnectionRequestController::class, 'respond']);
-    Route::get('/connection/my-pending-requests', [ConnectionRequestController::class, 'listMyPendingConnections']);
-    Route::get('/connection/my-accepted-requests', [ConnectionRequestController::class, 'listAllAcceptedActiveConnections']);
-    Route::post('/connection/check-connection-status', [ConnectionRequestController::class, 'checkConnectionStatus']);
+    Route::get('/connection/my-pending-requests',
+        [ConnectionRequestController::class, 'listMyPendingConnections']);
+    Route::get('/connection/my-accepted-requests',
+        [ConnectionRequestController::class, 'listAllAcceptedActiveConnections']);
+    Route::post('/connection/check-connection-status',
+        [ConnectionRequestController::class, 'checkConnectionStatus']);
     Route::get('/connections/count', [ConnectionRequestController::class, 'countConnection']);
     Route::get('connections/{id}', [ConnectionRequestController::class, 'show']);
 
